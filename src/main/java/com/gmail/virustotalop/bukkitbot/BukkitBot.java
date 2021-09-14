@@ -53,6 +53,16 @@ public class BukkitBot {
         return false;
     }
 
+    public boolean disconnect(BotPool pool) {
+        if(this.joined.get()) {
+            if(pool.removeBot(this)) {
+                this.session.get().disconnect("");
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String getUsername() {
         return this.username;
     }

@@ -50,6 +50,15 @@ public class BotPool {
         return this.threadMap.get(lowestThread).add(bot);
     }
 
+    public synchronized boolean removeBot(BukkitBot bukkitBot) {
+        for(Collection<BukkitBot> bots : this.threadMap.values()) {
+            if(bots.remove(bukkitBot)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean shutdown() {
         if(this.running.get()) {
             this.running.set(false);
