@@ -2,6 +2,7 @@ package com.gmail.virustotalop.bukkitbot;
 
 import com.github.steveice10.packetlib.Session;
 import com.gmail.virustotalop.bukkitbot.action.Action;
+import com.gmail.virustotalop.bukkitbot.action.ChatAction;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -70,5 +71,9 @@ public class BukkitBot {
 
     public Queue<Action> getActionQueue() {
         return this.actionQueue;
+    }
+
+    public void chat(String message) {
+        this.actionQueue.add(new ChatAction(this, message));
     }
 }
