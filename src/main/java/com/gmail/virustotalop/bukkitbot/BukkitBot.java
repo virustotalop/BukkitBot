@@ -1,7 +1,10 @@
 package com.gmail.virustotalop.bukkitbot;
 
 import com.github.steveice10.packetlib.Session;
+import com.gmail.virustotalop.bukkitbot.action.Action;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -17,6 +20,7 @@ public class BukkitBot {
     private final AtomicReference<String> hostAddress = new AtomicReference<>(null);
     private final AtomicInteger hostPort = new AtomicInteger();
     private final AtomicReference<Session> session = new AtomicReference<>(null);
+    private final Queue<Action> actionQueue = new ConcurrentLinkedQueue<>();
 
     public BukkitBot() {
         this(BASE_USERNAME + currentId.getAndIncrement());
@@ -62,5 +66,9 @@ public class BukkitBot {
             return true;
         }
         return false;
+    }
+
+    public Queue<Action> getActionQueue() {
+        return this.actionQueue;
     }
 }
