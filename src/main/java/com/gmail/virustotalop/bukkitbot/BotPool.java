@@ -1,5 +1,15 @@
 package com.gmail.virustotalop.bukkitbot;
 
+import com.github.steveice10.mc.auth.service.SessionService;
+import com.github.steveice10.mc.protocol.MinecraftConstants;
+import com.github.steveice10.mc.protocol.MinecraftProtocol;
+import com.github.steveice10.mc.protocol.packet.ingame.server.ServerJoinGamePacket;
+import com.github.steveice10.packetlib.Session;
+import com.github.steveice10.packetlib.event.session.PacketReceivedEvent;
+import com.github.steveice10.packetlib.event.session.SessionAdapter;
+import com.github.steveice10.packetlib.tcp.TcpClientSession;
+
+import java.net.Proxy;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -76,20 +86,29 @@ public class BotPool {
 
     private class BotPoolThread extends Thread {
 
-        private BotPoolThread(BotPool pool) {
-            super(createRunnable(pool));
+        private final BotPool pool;
+
+        public BotPoolThread(BotPool pool) {
+            this.pool = pool;
         }
 
-    }
-
-    private Runnable createRunnable(BotPool pool) {
-        return () -> {
-            while(pool.running.get()) {
-                Collection<BukkitBot> bots = pool.threadMap.get(this);
+        @Override
+        public void run() {
+            while(this.pool.running.get()) {
+                Collection<BukkitBot> bots = this.pool.threadMap.get(this);
                 for(BukkitBot bot : bots) {
-
+                    if(bot.hasJoined()) {
+                        String username = bot.getUsername();
+                        SessionService sessionService = new SessionService();
+                        sessionService.setProxy(Proxy.NO_PROXY);
+                        MinecraftProtocol protocol = new MinecraftProtocol(username);
+                        Session session = new TcpClientSession(bot.getHostAddress(), bot.getHostPort(), protocol);
+                        session.setFlag(MinecraftConstants.SESSION_SERVICE_KEY, sessionService);
+                        session.connect();
+                        bot.setSession(session);
+                    }
                 }
             }
-        };
+        }
     }
 }
