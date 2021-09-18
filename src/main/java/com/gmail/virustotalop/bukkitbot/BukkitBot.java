@@ -1,12 +1,16 @@
 package com.gmail.virustotalop.bukkitbot;
 
+import com.github.steveice10.mc.auth.service.SessionService;
+import com.github.steveice10.mc.protocol.MinecraftConstants;
+import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.packetlib.Session;
+import com.github.steveice10.packetlib.tcp.TcpClientSession;
 import com.gmail.virustotalop.bukkitbot.action.Action;
 import com.gmail.virustotalop.bukkitbot.action.ChatAction;
 
+import java.net.Proxy;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -15,11 +19,7 @@ public class BukkitBot {
     private static final AtomicInteger currentId = new AtomicInteger();
     private static final String BASE_USERNAME = "Bot";
 
-    private final AtomicBoolean joined = new AtomicBoolean();
-
     private final String username;
-    private final AtomicReference<String> hostAddress = new AtomicReference<>(null);
-    private final AtomicInteger hostPort = new AtomicInteger();
     private final AtomicReference<Session> session = new AtomicReference<>(null);
     private final Queue<Action> actionQueue = new ConcurrentLinkedQueue<>();
 
@@ -31,22 +31,19 @@ public class BukkitBot {
         this.username = username;
     }
 
-    public String getHostAddress() {
-        return this.hostAddress.get();
+    public boolean isConnected() {
+        return this.session.get() != null;
     }
 
-    public int getHostPort() {
-        return this.hostPort.get();
-    }
-
-    public boolean hasJoined() {
-        return this.joined.get();
-    }
-
-    public boolean join(BotPool pool, String address, int port) {
-        if(!this.joined.get()) {
-            this.hostAddress.set(address);
-            this.hostPort.set(port);
+    public boolean connect(BotPool pool, String address, int port) {
+        if(this.session.get() == null) {
+            SessionService sessionService = new SessionService();
+            sessionService.setProxy(Proxy.NO_PROXY);
+            MinecraftProtocol protocol = new MinecraftProtocol(this.username);
+            Session session = new TcpClientSession(address, port, protocol);
+            session.setFlag(MinecraftConstants.SESSION_SERVICE_KEY, sessionService);
+            session.connect(true);
+            this.session.set(session);
             pool.addBot(this);
             return true;
         }
@@ -54,9 +51,11 @@ public class BukkitBot {
     }
 
     public boolean disconnect(BotPool pool) {
-        if(this.joined.get()) {
+        Session session = this.session.get();
+        if(session != null) {
             if(pool.removeBot(this)) {
-                this.session.get().disconnect("");
+                session.disconnect("");
+                this.session.set(null);
                 return true;
             }
         }
@@ -71,19 +70,15 @@ public class BukkitBot {
         return this.session.get();
     }
 
-    public boolean setSession(Session session) {
-        if(this.session.get() != null) {
-            this.session.set(session);
-            return true;
-        }
-        return false;
-    }
-
     public Queue<Action> getActionQueue() {
         return this.actionQueue;
     }
 
-    public void chat(String message) {
+    public void sendChat(String message) {
         this.actionQueue.add(new ChatAction(this, message));
+    }
+
+    public void sendCommand(String command) {
+        this.actionQueue.add(new ChatAction(this, "/" + command));
     }
 }

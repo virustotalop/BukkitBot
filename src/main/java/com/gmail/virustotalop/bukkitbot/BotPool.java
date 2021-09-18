@@ -1,13 +1,7 @@
 package com.gmail.virustotalop.bukkitbot;
 
-import com.github.steveice10.mc.auth.service.SessionService;
-import com.github.steveice10.mc.protocol.MinecraftConstants;
-import com.github.steveice10.mc.protocol.MinecraftProtocol;
-import com.github.steveice10.packetlib.Session;
-import com.github.steveice10.packetlib.tcp.TcpClientSession;
 import com.gmail.virustotalop.bukkitbot.action.Action;
 
-import java.net.Proxy;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -110,21 +104,12 @@ public class BotPool {
                 }
                 Collection<BukkitBot> bots = this.pool.threadMap.get(this);
                 for(BukkitBot bot : bots) {
-                    if(bot.hasJoined()) {
+                    if(bot.isConnected()) {
                         Queue<Action> actions = bot.getActionQueue();
                         Action head;
                         while((head = actions.poll()) != null) {
                             head.perform();
                         }
-                    } else {
-                        String username = bot.getUsername();
-                        SessionService sessionService = new SessionService();
-                        sessionService.setProxy(Proxy.NO_PROXY);
-                        MinecraftProtocol protocol = new MinecraftProtocol(username);
-                        Session session = new TcpClientSession(bot.getHostAddress(), bot.getHostPort(), protocol);
-                        session.setFlag(MinecraftConstants.SESSION_SERVICE_KEY, sessionService);
-                        session.connect();
-                        bot.setSession(session);
                     }
                 }
             }
