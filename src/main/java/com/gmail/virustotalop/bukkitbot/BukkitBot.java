@@ -23,6 +23,8 @@ public class BukkitBot {
     private final AtomicReference<Session> session = new AtomicReference<>(null);
     private final Queue<Action> actionQueue = new ConcurrentLinkedQueue<>();
 
+    protected final AtomicInteger currentWindowId = new AtomicInteger(-1);
+
     public BukkitBot() {
         this(BASE_USERNAME + currentId.getAndIncrement());
     }
@@ -42,6 +44,7 @@ public class BukkitBot {
             MinecraftProtocol protocol = new MinecraftProtocol(this.username);
             Session session = new TcpClientSession(address, port, protocol);
             session.setFlag(MinecraftConstants.SESSION_SERVICE_KEY, sessionService);
+            session.addListener(new WindowListener(this));
             session.connect(true);
             this.session.set(session);
             pool.addBot(this);
@@ -54,6 +57,7 @@ public class BukkitBot {
         Session session = this.session.get();
         if(session != null) {
             if(pool.removeBot(this)) {
+                this.currentWindowId.set(-1);
                 session.disconnect("");
                 this.session.set(null);
                 return true;
@@ -64,6 +68,10 @@ public class BukkitBot {
 
     public String getUsername() {
         return this.username;
+    }
+
+    public int getCurrentWindowId() {
+        return this.currentWindowId.get();
     }
 
     public Session getSession() {
