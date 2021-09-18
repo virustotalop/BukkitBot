@@ -5,13 +5,9 @@ import com.github.steveice10.mc.protocol.MinecraftConstants;
 import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.tcp.TcpClientSession;
-import com.gmail.virustotalop.bukkitbot.action.Action;
-import com.gmail.virustotalop.bukkitbot.action.ChatAction;
 import com.gmail.virustotalop.bukkitbot.listener.WindowListener;
 
 import java.net.Proxy;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -19,10 +15,9 @@ public class BukkitBot {
 
     private static final AtomicInteger currentId = new AtomicInteger();
     private static final String BASE_USERNAME = "Bot";
-
     private final String username;
     private final AtomicReference<Session> session = new AtomicReference<>(null);
-    private final Queue<Action> actionQueue = new ConcurrentLinkedQueue<>();
+    private final BotActions actions = new BotActions(this);
 
     protected final AtomicInteger currentWindowId = new AtomicInteger(-1);
 
@@ -80,11 +75,7 @@ public class BukkitBot {
         return this.session.get();
     }
 
-    public void sendChat(String message) {
-        new ChatAction(this, message).perform();
-    }
-
-    public void sendCommand(String command) {
-        new ChatAction(this, "/" + command).perform();
+    public BotActions getActions() {
+        return this.actions;
     }
 }

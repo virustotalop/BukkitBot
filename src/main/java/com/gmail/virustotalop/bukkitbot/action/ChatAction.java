@@ -2,6 +2,7 @@ package com.gmail.virustotalop.bukkitbot.action;
 
 import com.github.steveice10.mc.protocol.packet.ingame.client.ClientChatPacket;
 import com.gmail.virustotalop.bukkitbot.BukkitBot;
+import com.gmail.virustotalop.bukkitbot.Action;
 
 public class ChatAction extends Action {
 
@@ -14,7 +15,7 @@ public class ChatAction extends Action {
 
     @Override
     public boolean perform() {
-        this.getBot().getSession().send(new ClientChatPacket(this.message));
+        this.sendPacket(new ClientChatPacket(this.message));
         return true;
     }
 }
