@@ -37,7 +37,7 @@ public class BukkitBot {
         return this.session.get() != null;
     }
 
-    public boolean connect(BotPool pool, String address, int port) {
+    public boolean connect(String address, int port) {
         if(this.session.get() == null) {
             SessionService sessionService = new SessionService();
             sessionService.setProxy(Proxy.NO_PROXY);
@@ -47,21 +47,18 @@ public class BukkitBot {
             session.addListener(new WindowListener(this));
             session.connect(true);
             this.session.set(session);
-            pool.addBot(this);
             return true;
         }
         return false;
     }
 
-    public boolean disconnect(BotPool pool) {
+    public boolean disconnect() {
         Session session = this.session.get();
         if(session != null) {
-            if(pool.removeBot(this)) {
-                this.currentWindowId.set(-1);
-                session.disconnect("");
-                this.session.set(null);
-                return true;
-            }
+            this.currentWindowId.set(-1);
+            session.disconnect("");
+            this.session.set(null);
+            return true;
         }
         return false;
     }
@@ -78,15 +75,12 @@ public class BukkitBot {
         return this.session.get();
     }
 
-    public Queue<Action> getActionQueue() {
-        return this.actionQueue;
-    }
 
     public void sendChat(String message) {
-        this.actionQueue.add(new ChatAction(this, message));
+        new ChatAction(this, message).perform();
     }
 
     public void sendCommand(String command) {
-        this.actionQueue.add(new ChatAction(this, "/" + command));
+        new ChatAction(this, "/" + command).perform();
     }
 }
