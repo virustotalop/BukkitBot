@@ -7,6 +7,7 @@ import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.tcp.TcpClientSession;
 import com.gmail.virustotalop.bukkitbot.action.Action;
 import com.gmail.virustotalop.bukkitbot.action.ChatAction;
+import com.gmail.virustotalop.bukkitbot.listener.WindowListener;
 
 import java.net.Proxy;
 import java.util.Queue;
@@ -71,10 +72,13 @@ public class BukkitBot {
         return this.currentWindowId.get();
     }
 
+    public void setCurrentWindowId(int windowId) {
+        this.currentWindowId.set(windowId);
+    }
+
     public Session getSession() {
         return this.session.get();
     }
-
 
     public void sendChat(String message) {
         new ChatAction(this, message).perform();
